@@ -1,5 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/core';
+import { injectGlobal } from 'emotion';
 import { mount, route } from 'navi';
 import { Suspense, Fragment } from 'react';
 import ReactDOM from 'react-dom';
@@ -26,16 +27,26 @@ export const routes = mount({
   }),
 });
 
+injectGlobal({
+  '*, *::after, *::before': {
+    boxSizing: 'border-box'
+  }
+})
+
+const App = () => {
+  console.log('top level render?')
+  return <Router routes={routes}>
+  <MainLayout nav={<PrimaryNavOrganism />}>
+    <TabManagerOrganism>
+      <Suspense fallback={'loading...'}>
+        <View />
+      </Suspense>
+    </TabManagerOrganism>
+  </MainLayout>
+</Router>}
+
 // Then pass your routes to a `<Router>`, and render them with `<View>`.
 ReactDOM.render(
-  <Router routes={routes}>
-    <MainLayout nav={<PrimaryNavOrganism />}>
-      <TabManagerOrganism>
-        <Suspense fallback={'loading...'}>
-          <View />
-        </Suspense>
-      </TabManagerOrganism>
-    </MainLayout>
-  </Router>,
+  <App />,
   document.getElementById('root')
 );

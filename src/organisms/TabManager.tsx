@@ -2,7 +2,7 @@
 import { jsx, keyframes } from '@emotion/core';
 import { Fragment, FunctionComponent, useState, useEffect } from 'react';
 import { unstyleList } from 'abc-react/dist/styles/list';
-import { primaryWhite, primaryBlue } from 'abc-react/dist/styles/colors/abbvie';
+import { primaryWhite, primaryBlue, neutral40, neutral70 } from 'abc-react/dist/styles/colors/abbvie';
 import { Top, Fill, Left } from 'react-spaces';
 import { useLinkProps, useHistory, useActive, useNavigation } from 'react-navi';
 import qs from 'query-string';
@@ -43,19 +43,36 @@ const Tab: FunctionComponent<UseLinkPropsOptions & { removeTab: () => void }> = 
       {...link as (Omit<typeof link, 'onClick'>)}
       css={[
         {
-          border: '1px solid black',
+          border: '1px solid',
+          borderColor: neutral70.hex(),
           borderBottomColor: 'transparent',
+          borderBottomWidth: 0,
           padding: 4,
           margin: 2,
+          marginBottom: 0,
           display: 'flex',
           justifyContent: 'space-between',
           alignIitems: 'center',
+          borderTopLeftRadius: 3,
+          borderTopRightRadius: 3,
+          background: neutral40.hex(),
         },
-        active && { fontWeight: 'bold' },
+        active && { fontWeight: 'bold', background: primaryWhite.hex() ,
+        position:'relative',
+        // This element covers up the grey borderBottom of the nav tab bar
+        '::after': {
+          position: 'absolute',
+          left:0,
+          right:0,
+          bottom:-1,
+          height: 1,
+          content: '""',
+          background: primaryWhite.hex(),
+        }},
       ]}
     >
       <span>{title || <RefreshIcon css={{ animation: `${spin} 1s infinite linear` }} />}</span>
-      <button css={{ border: 'none', margin: 0, padding: 0, appearance: 'none' }} disabled={link.disabled} onClick={e => { e.preventDefault(); removeTab(); }}>
+      <button css={{ border: 'none', margin: 0, padding: 0, appearance: 'none' , background:'transparent'}} disabled={link.disabled} onClick={e => { e.stopPropagation(); removeTab(); }}>
         <CloseIcon height={16} width={16} />
       </button>
     </li>
@@ -108,7 +125,7 @@ const TabManagerOrganism: FunctionComponent = ({ children }) => {
       )}
       <Fill scrollable={false}>
         <Top as="nav" size={TAB_NAVBAR_HEIGHT}>
-          <ol css={[unstyleList, { display: 'flex', height: TAB_NAVBAR_HEIGHT }]}>
+          <ol css={[unstyleList, { display: 'flex', height: TAB_NAVBAR_HEIGHT, justifyContent: 'flex-start', alignItems: 'flex-end', borderBottom: `1px solid ${neutral40.hex()}` }]}>
             {tabs.map((t, i) => (
               <Tab key={i} removeTab={() => {
                 const newTabs = without(tabs, t);
@@ -116,7 +133,12 @@ const TabManagerOrganism: FunctionComponent = ({ children }) => {
                   setTabs(newTabs)
                 } else {
                   setTabs(newTabs.length > 0 ? newTabs : [{ href: { pathname: '/' } }])
-                  navigate({ pathname: '/' })
+                  try {
+                    navigate({ pathname: '/' })
+
+                  } catch(ex) {
+                    console.error('Caught failed navigate event https://github.com/frontarm/navi/issues/98#issuecomment-520600240')
+                  }
                   console.log(navigate)
                 }
               }
